@@ -18,7 +18,7 @@ This project was created using `bun init` in bun v1.1.32. [Bun](https://bun.sh) 
 
     src/
     ├── core/
-    │   ├── Geometry.ts                Shapes and collision detection
+    │   ├── Geometry/                Shapes and collision detection
     │   ├── PhysicsEngine.ts           Motion, collisions, response
     │   ├── MIDIEmitter.ts             WebMIDI I/O and event sending
     │   └── EventBus.ts                Simple pub/sub for events

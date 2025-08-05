@@ -1,4 +1,4 @@
-import type { Polygon } from "./Geometry";
+import type { Polygon } from "./Geometry/";
 
 export class CanvasRenderer {
     private canvas: HTMLCanvasElement;
@@ -23,6 +23,8 @@ export class CanvasRenderer {
 
     drawPolygon(shape: Polygon) {
         if (shape.vertices.length < 3) return;
+
+        shape.getTransformedVertices();
 
         if (shape.glow.glowIntensity > 0) {
             shape.glow.update();
@@ -55,5 +57,9 @@ export class CanvasRenderer {
         this.ctx.arc(position.x, position.y, radius, 0, Math.PI * 2);
         this.ctx.fill();
         this.ctx.closePath();
+    }
+
+    getCanvas() {
+        return this.canvas;
     }
 }
