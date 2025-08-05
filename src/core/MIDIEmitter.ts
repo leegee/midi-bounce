@@ -9,13 +9,15 @@ export interface BounceData {
 }
 
 export class MIDIEmitter {
-    private midiOut: WebMidi.MIDIOutput | null = null;
+    private midiOut: MIDIOutput | null = null;
 
     async init() {
-        const access = await navigator.requestMIDIAccess();
-        const outputs = Array.from(access.outputs.values());
-        if (outputs.length > 0) {
-            this.midiOut = outputs[0];
+        const midiAccess = await navigator.requestMIDIAccess();
+        if (midiAccess.outputs) {
+            const outputs = Array.from((midiAccess.outputs as Map<string, MIDIOutput>).values());
+            if (outputs.length > 0) {
+                this.midiOut = outputs[0];
+            }
         }
     }
 

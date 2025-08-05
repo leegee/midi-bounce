@@ -1,6 +1,6 @@
 // ------------------------ core/PhysicsEngine.ts ------------------------
-import { Vector, Polygon } from './Geometry';
-import { MIDIEmitter, BounceData } from './MIDIEmitter';
+import { type Vector, Polygon } from './Geometry';
+import { MIDIEmitter, type BounceData } from './MIDIEmitter';
 import { EventBus } from './EventBus';
 
 export class Ball {

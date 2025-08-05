@@ -1,7 +1,7 @@
 
 // ------------------------ app/App.ts ------------------------
 import { PhysicsEngine, Ball } from '../core/PhysicsEngine';
-import { MIDIEmitter } from '../core/MIDIEmitter';
+import { MIDIEmitter, type BounceData } from '../core/MIDIEmitter';
 import { EventBus } from '../core/EventBus';
 import { ExamplePlugin } from '../plugins/ExamplePlugin';
 
@@ -17,7 +17,7 @@ export class App {
         this.plugin = new ExamplePlugin();
 
         EventBus.on('bounce', (data) => {
-            const processed = this.plugin.processBounce(data);
+            const processed = this.plugin.processBounce(data as BounceData);
             this.midi.emitBounceEvent(processed);
         });
     }

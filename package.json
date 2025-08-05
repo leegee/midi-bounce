@@ -2,10 +2,20 @@
   "name": "midi-bounce",
   "module": "src/main.ts",
   "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/webmidi": "^3.0.1",
+    "vite": "^7.0.6"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "lit": "^3.3.1"
   }
 }

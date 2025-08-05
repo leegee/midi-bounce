@@ -1,6 +1,12 @@
 // ------------------------ components/PluginSlot.ts ------------------------
 import { LitElement, html, css } from 'lit';
 
+declare global {
+    interface HTMLElementTagNameMap {
+        'plugin-slot': PluginSlot;
+    }
+}
+
 export class PluginSlot extends LitElement {
     static styles = css`
         :host {
