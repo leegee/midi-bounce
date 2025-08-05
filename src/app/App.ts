@@ -19,6 +19,8 @@ export class App {
     constructor() {
         this.renderer = new CanvasRenderer(document.body);
 
+        this.setupMouseEvents();
+
         // Initialize ball
         const ball = new Ball(
             {
@@ -30,14 +32,22 @@ export class App {
         );
         this.physics = new PhysicsEngine(ball);
 
-        // Add draggable hexagon
+        // Add first draggable hexagon
         const hexagon = new Polygon(this.createHexagon(
-            this.renderer.width / 2,
+            this.renderer.width / 2 - 150, // Offset position
             this.renderer.height / 2,
             100
         ));
         hexagon.draggable = true;
         this.physics.addShape(hexagon);
+
+        const triangle = new Polygon(this.createHexagon(
+            this.renderer.width / 2 + 250,
+            this.renderer.height / 2 - 150,
+            80
+        ));
+        triangle.draggable = true;
+        this.physics.addShape(triangle);
 
         // MIDI setup
         this.midi = new MIDIEmitter();
@@ -46,8 +56,6 @@ export class App {
             const processed = this.plugin.processBounce(data);
             this.midi.emitBounceEvent(processed);
         });
-
-        this.setupMouseEvents();
     }
 
     async init() {
