@@ -1,6 +1,10 @@
 import { type Vector, GlowComponent } from ".";
 import type { ChangeHistory, SceneChange } from "../../app/ChangeHistory";
 
+function pointsEqual(p1: Vector, p2: Vector, tol = 0.5): boolean {
+    return Math.abs(p1.x - p2.x) < tol && Math.abs(p1.y - p2.y) < tol;
+}
+
 export class Polygon {
     vertices: { x: number; y: number }[];
     offset: { x: number; y: number } = { x: 0, y: 0 };
@@ -58,14 +62,11 @@ export class Polygon {
         const basePolygon = this;
         const baseVertices = basePolygon.vertices;
 
-        // 1. Base polygon clicked edge points
         const a = baseVertices[edgeIndex];
         const b = baseVertices[(edgeIndex + 1) % baseVertices.length];
 
-        // 2. Edge center
         const edgeCenter = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 
-        // 3. Polygon center
         const polygonCenter = baseVertices.reduce(
             (acc, v) => {
                 acc.x += v.x;
@@ -77,27 +78,24 @@ export class Polygon {
         polygonCenter.x /= baseVertices.length;
         polygonCenter.y /= baseVertices.length;
 
-        // 4. Vector from polygon center to edge center
         let dir = { x: edgeCenter.x - polygonCenter.x, y: edgeCenter.y - polygonCenter.y };
         const dirLength = Math.hypot(dir.x, dir.y);
-
         if (dirLength === 0) {
-            // Avoid division by zero; pick arbitrary direction (e.g., upward)
             dir = { x: 0, y: -1 };
         } else {
-            // Normalize direction vector
             dir.x /= dirLength;
             dir.y /= dirLength;
         }
 
         const edgeLength = Math.hypot(b.x - a.x, b.y - a.y);
+        const apothem = hexRadius * Math.cos(Math.PI / 6);
 
-        const moveDistance = edgeLength - (1.5 * this.lineWidth);
+        const moveDistance = apothem + (edgeLength / 2) - (this.lineWidth * 5);
 
         const newHexCenter = {
             x: edgeCenter.x + dir.x * moveDistance,
             y: edgeCenter.y + dir.y * moveDistance,
-        }
+        };
 
         const hexVertices: Vector[] = [];
         for (let i = 0; i < 6; i++) {
@@ -108,7 +106,6 @@ export class Polygon {
             });
         }
 
-        // Translate hex vertices to new center position
         const translatedHexVertices = hexVertices.map((v) => ({
             x: v.x + newHexCenter.x,
             y: v.y + newHexCenter.y,
@@ -117,22 +114,94 @@ export class Polygon {
         const newHex = new Polygon(translatedHexVertices);
         newHex.draggable = true;
 
-        // 10. Create scene change for undo/redo
+        let matchingEdgeIndex = -1;
+        const tolerance = 1.8;
+        for (let i = 0; i < newHex.vertices.length; i++) {
+            const next = (i + 1) % newHex.vertices.length;
+            const v1 = newHex.vertices[i];
+            const v2 = newHex.vertices[next];
+
+            const distStartToEnd = Math.hypot(v1.x - b.x, v1.y - b.y);
+            const distEndToStart = Math.hypot(v2.x - a.x, v2.y - a.y);
+
+            if (distStartToEnd < tolerance && distEndToStart < tolerance) {
+                matchingEdgeIndex = i;
+                break;
+            }
+        }
+
+        if (matchingEdgeIndex === -1) {
+            console.warn("No matching edge found between base polygon and new hexagon.");
+            scenePolygons.push(newHex);
+            return;
+        }
+
         const change: SceneChange = {
-            description: `Add hexagon at edge ${edgeIndex} of polygon`,
+            description: `Add and merge hexagon at edge ${edgeIndex} of polygon`,
 
             apply() {
-                scenePolygons.push(newHex);
+                const baseIndex = scenePolygons.indexOf(basePolygon);
+                if (baseIndex !== -1) scenePolygons.splice(baseIndex, 1);
+
+                const hexIndex = scenePolygons.indexOf(newHex);
+                if (hexIndex !== -1) scenePolygons.splice(hexIndex, 1);
+
+                const mergedPolygon = basePolygon.mergeWithPolygonOnSharedEdge(
+                    newHex,
+                    edgeIndex,
+                    matchingEdgeIndex
+                );
+
+                scenePolygons.push(mergedPolygon);
             },
 
             rollback() {
-                const index = scenePolygons.indexOf(newHex);
-                if (index !== -1) scenePolygons.splice(index, 1);
+                const merged = scenePolygons.find(
+                    (p) => p.vertices.length === basePolygon.vertices.length + newHex.vertices.length - 2
+                );
+                if (merged) {
+                    const idx = scenePolygons.indexOf(merged);
+                    if (idx !== -1) scenePolygons.splice(idx, 1);
+                }
+
+                scenePolygons.push(basePolygon);
+                scenePolygons.push(newHex);
             },
         };
 
         history.addChange(change);
     }
 
+    mergeWithPolygonOnSharedEdge(other: Polygon, sharedEdgeThis: number, sharedEdgeOther: number): Polygon {
+        const vertsA = this.vertices;
+        const vertsB = other.vertices;
 
+        const nextA = (sharedEdgeThis + 1) % vertsA.length;
+        const nextB = (sharedEdgeOther + 1) % vertsB.length;
+
+        if (!(
+            pointsEqual(vertsA[sharedEdgeThis], vertsB[(nextB)]) &&
+            pointsEqual(vertsA[nextA], vertsB[sharedEdgeOther])
+        )) {
+            console.error("Base edge:", vertsA[sharedEdgeThis], vertsA[nextA]);
+            console.error("Other edge:", vertsB[(nextB)], vertsB[sharedEdgeOther]);
+            throw new Error("Shared edges do not match for merging.");
+        }
+
+        const partA1 = vertsA.slice(0, sharedEdgeThis + 1);
+
+        const partB: Vector[] = [];
+        let i = nextB;
+        while (true) {
+            partB.push(vertsB[i]);
+            if (i === sharedEdgeOther) break;
+            i = (i + 1) % vertsB.length;
+        }
+
+        const partA2 = vertsA.slice(nextA);
+
+        const mergedVertices = [...partA1, ...partB, ...partA2];
+
+        return new Polygon(mergedVertices);
+    }
 }
