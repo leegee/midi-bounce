@@ -5,6 +5,7 @@ import { ExamplePlugin } from '../plugins/ExamplePlugin';
 import { CanvasRenderer } from '../core/CanvasRenderer';
 import { Polygon } from '../core/Geometry';
 
+const BALL_RADIUS = 10;
 export class App {
     private physics: PhysicsEngine;
     private midi: MIDIEmitter;
@@ -21,6 +22,7 @@ export class App {
                 x: this.renderer.width / 2,
                 y: this.renderer.height / 2,
             },
+            BALL_RADIUS,
             {
                 x: 100,
                 y: 120
