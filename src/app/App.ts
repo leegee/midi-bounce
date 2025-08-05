@@ -69,7 +69,7 @@ export class App {
         }
 
         // Draw the ball with radius 10
-        this.renderer.drawBall(this.physics.ball.position, 10);
+        this.renderer.drawBall(this.physics.ball.position, BALL_RADIUS);
 
         requestAnimationFrame(this.update.bind(this));
     }

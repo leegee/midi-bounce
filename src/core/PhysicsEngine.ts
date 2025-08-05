@@ -44,6 +44,7 @@ export class PhysicsEngine {
                     this.ball.velocity.y -= 2 * dot * edgeNormal.y;
 
                     shape.glow.trigger(1);
+                    this.ball.glow.trigger(1);
 
                     //  Push ball slightly away to avoid "sticking"
                     this.ball.position.x += edgeNormal.x * 0.5;
