@@ -1,24 +1,8 @@
 // ------------------------ core/PhysicsEngine.ts ------------------------
-import { type Vector, Polygon } from './Geometry';
-import { MIDIEmitter, type BounceData } from './MIDIEmitter';
+import { Polygon } from './Geometry';
+import { type BounceData } from './MIDIEmitter';
 import { EventBus } from './EventBus';
-
-export class Ball {
-    position: Vector;
-    radius: number;
-    velocity: Vector;
-
-    constructor(position: Vector, radius: number, velocity: Vector,) {
-        this.position = position;
-        this.velocity = velocity;
-        this.radius = radius;
-    }
-
-    updatePosition(dt: number) {
-        this.position.x += this.velocity.x * dt;
-        this.position.y += this.velocity.y * dt;
-    }
-}
+import type { Ball } from './Ball';
 
 export class PhysicsEngine {
     shapes: Polygon[] = [];
