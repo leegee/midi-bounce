@@ -1,5 +1,7 @@
 import { type Vector, GlowComponent } from ".";
 
+const SMOOTHING = 0.2;
+
 export class Ball {
     position: Vector;
     radius: number;
