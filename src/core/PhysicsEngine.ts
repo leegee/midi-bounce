@@ -3,6 +3,7 @@ import { Ball, Polygon } from './Geometry';
 import { type BounceData } from './MIDIEmitter';
 import { EventBus } from './EventBus';
 
+
 export class PhysicsEngine {
     shapes: Polygon[] = [];
     ball: Ball;
@@ -15,9 +16,13 @@ export class PhysicsEngine {
         this.shapes.push(shape);
     }
 
-    update(dt: number) {
-        this.ball.updatePosition(dt);
+    update(deltaTime: number) {
         this.checkCollisions();
+        this.ball.updatePosition(deltaTime);
+        this.ball.glow.update(deltaTime);
+        for (const shape of this.shapes) {
+            shape.glow.update(deltaTime);
+        }
     }
 
     private checkCollisions() {
@@ -29,6 +34,7 @@ export class PhysicsEngine {
                 const a = vertices[i];
                 const b = vertices[(i + 1) % numVertices];  // Wrap around to close polygon
 
+                // Collision detected
                 if (this.circleLineCollision(this.ball.position, this.ball.radius, a, b)) {
                     // Reflect ball velocity
                     const edgeNormal = this.calculateEdgeNormal(a, b);
@@ -37,7 +43,9 @@ export class PhysicsEngine {
                     this.ball.velocity.x -= 2 * dot * edgeNormal.x;
                     this.ball.velocity.y -= 2 * dot * edgeNormal.y;
 
-                    // Optional: Push ball slightly away to avoid "sticking"
+                    shape.glow.trigger(1);
+
+                    //  Push ball slightly away to avoid "sticking"
                     this.ball.position.x += edgeNormal.x * 0.5;
                     this.ball.position.y += edgeNormal.y * 0.5;
 
@@ -45,9 +53,9 @@ export class PhysicsEngine {
                     const bounceData: BounceData = {
                         angle: Math.atan2(this.ball.velocity.y, this.ball.velocity.x) * (180 / Math.PI),
                         velocity: Math.hypot(this.ball.velocity.x, this.ball.velocity.y),
-                        edgeMaterial: 'metal',  // You can later parametrize this per edge
-                        edgeLight: 0.8,         // Likewise
-                        edgeColor: { r: 255, g: 0, b: 0 }  // Likewise
+                        edgeMaterial: 'metal',              // TODO parametrize this per edge
+                        edgeLight: 0.8,                     // "" ""
+                        edgeColor: { r: 255, g: 0, b: 0 }   // "" ""
                     };
 
                     EventBus.emit('bounce', bounceData);

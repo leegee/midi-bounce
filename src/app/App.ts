@@ -65,7 +65,7 @@ export class App {
 
         // Draw all shapes
         for (const shape of this.physics.shapes) {
-            this.renderer.drawPolygon(shape.vertices);
+            this.renderer.drawPolygon(shape);
         }
 
         // Draw the ball with radius 10

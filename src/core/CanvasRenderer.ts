@@ -1,3 +1,5 @@
+import type { Polygon } from "./Geometry";
+
 export class CanvasRenderer {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
@@ -19,18 +21,32 @@ export class CanvasRenderer {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    drawPolygon(vertices: { x: number, y: number }[]) {
-        if (vertices.length < 3) return;
+    drawPolygon(shape: Polygon) {
+        if (shape.vertices.length < 3) return;
+
+        if (shape.glow.glowIntensity > 0) {
+            shape.glow.update();
+            const glowAlpha = shape.glow.glowIntensity * 0.5;  // Max opacity 0.5
+            const glowSize = 20 * shape.glow.glowIntensity;    // Glow blur radius
+
+            this.ctx.save();  // Save state before applying glow
+            this.ctx.shadowColor = `rgba(255, 255, 0, ${glowAlpha})`;  // Yellow glow
+            this.ctx.shadowBlur = glowSize;
+        }
+
         this.ctx.beginPath();
-        this.ctx.moveTo(vertices[0].x, vertices[0].y);
         this.ctx.strokeStyle = "orange";
         this.ctx.lineWidth = 13;
-
-        for (let i = 1; i < vertices.length; i++) {
-            this.ctx.lineTo(vertices[i].x, vertices[i].y);
+        this.ctx.moveTo(shape.vertices[0].x, shape.vertices[0].y);
+        for (let i = 1; i < shape.vertices.length; i++) {
+            this.ctx.lineTo(shape.vertices[i].x, shape.vertices[i].y);
         }
         this.ctx.closePath();
         this.ctx.stroke();
+
+        if (shape.glow.glowIntensity > 0) {
+            this.ctx.restore();
+        }
     }
 
     drawBall(position: { x: number, y: number }, radius: number = 10) {
