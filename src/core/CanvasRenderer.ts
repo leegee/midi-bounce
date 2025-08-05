@@ -38,7 +38,7 @@ export class CanvasRenderer {
 
         this.ctx.beginPath();
         this.ctx.strokeStyle = "orange";
-        this.ctx.lineWidth = 13;
+        this.ctx.lineWidth = shape.lineWidth;
         this.ctx.moveTo(shape.vertices[0].x, shape.vertices[0].y);
         for (let i = 1; i < shape.vertices.length; i++) {
             this.ctx.lineTo(shape.vertices[i].x, shape.vertices[i].y);
