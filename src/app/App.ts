@@ -3,7 +3,8 @@ import { MIDIEmitter } from '../core/MIDIEmitter';
 import { EventBus } from '../core/EventBus';
 import { ExamplePlugin } from '../plugins/ExamplePlugin';
 import { CanvasRenderer } from '../core/CanvasRenderer';
-import { Ball, Polygon } from '../core/Geometry/';
+import { Ball, findClosestEdge, Polygon, showContextMenu } from '../core/Geometry/';
+import { ChangeHistory } from './ChangeHistory';
 
 const BALL_RADIUS = 10;
 const INITIAL_VELOCITY = { x: 100, y: 120 };
@@ -15,6 +16,7 @@ export class App {
     private renderer: CanvasRenderer;
     private draggingShape: Polygon | null = null;
     private lastMousePos = { x: 0, y: 0 };
+    private history = new ChangeHistory();
 
     constructor() {
         this.renderer = new CanvasRenderer(document.body);
@@ -161,6 +163,25 @@ export class App {
 
         canvas.addEventListener('mouseleave', () => {
             this.draggingShape = null;
+        });
+
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+
+            const hit = findClosestEdge(this.physics.shapes, { x: mouseX, y: mouseY });
+            if (hit) {
+                // Show context menu at cursor
+                showContextMenu(e.clientX, e.clientY, () => {
+                    hit.polygon.addHexagonAtEdge(hit.edgeIndex, 100, this.physics.shapes, this.history);
+                });
+            }
         });
     }
 }
