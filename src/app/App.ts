@@ -1,9 +1,9 @@
 import { PhysicsEngine } from '../core/PhysicsEngine';
-import { MIDIEmitter, type BounceData } from '../core/MIDIEmitter';
+import { MIDIEmitter } from '../core/MIDIEmitter';
 import { EventBus } from '../core/EventBus';
 import { ExamplePlugin } from '../plugins/ExamplePlugin';
 import { CanvasRenderer } from '../core/CanvasRenderer';
-import { Ball, Polygon, type Vector } from '../core/Geometry/';
+import { Ball, Polygon } from '../core/Geometry/';
 
 const BALL_RADIUS = 10;
 const INITIAL_VELOCITY = { x: 100, y: 120 };
@@ -14,19 +14,23 @@ export class App {
     private plugin: ExamplePlugin;
     private renderer: CanvasRenderer;
     private draggingShape: Polygon | null = null;
-    private dragOffset: { x: number; y: number } = { x: 0, y: 0 };
+    private lastMousePos = { x: 0, y: 0 };
 
     constructor() {
         this.renderer = new CanvasRenderer(document.body);
-        this.setupMouseEvents();
 
+        // Initialize ball
         const ball = new Ball(
-            { x: this.renderer.width / 2, y: this.renderer.height / 2 },
+            {
+                x: this.renderer.width / 2,
+                y: this.renderer.height / 2,
+            },
             BALL_RADIUS,
             { ...INITIAL_VELOCITY }
         );
         this.physics = new PhysicsEngine(ball);
 
+        // Add draggable hexagon
         const hexagon = new Polygon(this.createHexagon(
             this.renderer.width / 2,
             this.renderer.height / 2,
@@ -35,13 +39,15 @@ export class App {
         hexagon.draggable = true;
         this.physics.addShape(hexagon);
 
+        // MIDI setup
         this.midi = new MIDIEmitter();
         this.plugin = new ExamplePlugin();
-
         EventBus.on('bounce', (data) => {
             const processed = this.plugin.processBounce(data);
             this.midi.emitBounceEvent(processed);
         });
+
+        this.setupMouseEvents();
     }
 
     async init() {
@@ -50,18 +56,16 @@ export class App {
     }
 
     private update() {
-        const dt = 0.016;
+        const dt = 0.016; // Fixed timestep
 
         if (!this.draggingShape) {
             this.physics.update(dt);
         }
 
         this.renderer.clear();
-
         for (const shape of this.physics.shapes) {
             this.renderer.drawPolygon(shape);
         }
-
         this.renderer.drawBall(this.physics.ball.position, BALL_RADIUS);
 
         requestAnimationFrame(this.update.bind(this));
@@ -79,7 +83,7 @@ export class App {
         return vertices;
     }
 
-    private calculatePolygonCenter(vertices: { x: number, y: number }[]): { x: number, y: number } {
+    private calculatePolygonCenter(vertices: { x: number, y: number }[]) {
         let sumX = 0;
         let sumY = 0;
         for (const v of vertices) {
@@ -96,15 +100,13 @@ export class App {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-
             const mouseX = (e.clientX - rect.left) * scaleX;
             const mouseY = (e.clientY - rect.top) * scaleY;
 
             for (const shape of this.physics.shapes) {
                 if (shape.draggable && shape.containsPoint(mouseX, mouseY)) {
                     this.draggingShape = shape;
-                    const center = this.calculatePolygonCenter(shape.vertices);
-                    this.dragOffset = { x: mouseX - center.x, y: mouseY - center.y };
+                    this.lastMousePos = { x: mouseX, y: mouseY };
                     break;
                 }
             }
@@ -116,42 +118,37 @@ export class App {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-
             const mouseX = (e.clientX - rect.left) * scaleX;
             const mouseY = (e.clientY - rect.top) * scaleY;
 
-            const newCenterX = mouseX - this.dragOffset.x;
-            const newCenterY = mouseY - this.dragOffset.y;
+            const dx = mouseX - this.lastMousePos.x;
+            const dy = mouseY - this.lastMousePos.y;
 
-            const oldCenter = this.calculatePolygonCenter(this.draggingShape.vertices);
-            const dx = newCenterX - oldCenter.x;
-            const dy = newCenterY - oldCenter.y;
-
-            // Move vertices by absolute delta
+            // Move vertices directly
             for (const v of this.draggingShape.vertices) {
                 v.x += dx;
                 v.y += dy;
             }
 
             // Snap ball to polygon center
-            this.physics.ball.position.x = newCenterX;
-            this.physics.ball.position.y = newCenterY;
+            const center = this.calculatePolygonCenter(this.draggingShape.vertices);
+            this.physics.ball.position.x = center.x;
+            this.physics.ball.position.y = center.y;
 
-            // While dragging, ball velocity is zero
+            // During drag, velocity is frozen
             this.physics.ball.velocity.x = 0;
             this.physics.ball.velocity.y = 0;
 
-            this.update();
+            this.lastMousePos = { x: mouseX, y: mouseY };
         });
 
         canvas.addEventListener('mouseup', () => {
             if (this.draggingShape) {
-                const center = this.calculatePolygonCenter(this.draggingShape.vertices);
-                this.physics.ball.position.x = center.x;
-                this.physics.ball.position.y = center.y;
+                this.draggingShape = null;
+
+                // On release, reset velocity to initial
                 this.physics.ball.velocity = { ...INITIAL_VELOCITY };
             }
-            this.draggingShape = null;
         });
 
         canvas.addEventListener('mouseleave', () => {
