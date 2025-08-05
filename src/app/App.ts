@@ -12,20 +12,35 @@ export class App {
     private renderer: CanvasRenderer;
 
     constructor() {
+        // Create canvas renderer and append to body
+        this.renderer = new CanvasRenderer(document.body);
+
         // Initialize the ball at position (100,100) moving at (100, 120) px/s velocity
-        const ball = new Ball({ x: 100, y: 100 }, { x: 100, y: 120 });
+        const ball = new Ball(
+            {
+                x: this.renderer.width / 2,
+                y: this.renderer.height / 2,
+            },
+            {
+                x: 100,
+                y: 120
+            }
+        );
         this.physics = new PhysicsEngine(ball);
 
         // Add a sample hexagon shape at (200,200) with radius 50
-        const hexagon = new Polygon(this.createHexagon(200, 200, 50));
+        const hexagon = new Polygon(
+            this.createHexagon(
+                this.renderer.width / 2,
+                this.renderer.height / 2,
+                100
+            )
+        );
         this.physics.addShape(hexagon);
 
         // Setup MIDI emitter and plugin processor
         this.midi = new MIDIEmitter();
         this.plugin = new ExamplePlugin();
-
-        // Create canvas renderer and append to body
-        this.renderer = new CanvasRenderer(document.body);
 
         // Listen for bounce events, process via plugin, then send MIDI
         EventBus.on('bounce', (data) => {
