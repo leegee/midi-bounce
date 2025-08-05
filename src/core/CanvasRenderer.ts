@@ -24,7 +24,7 @@ export class CanvasRenderer {
     drawPolygon(shape: Polygon) {
         if (shape.vertices.length < 3) return;
 
-        shape.getTransformedVertices();
+        shape.transformedVertices();
 
         if (shape.glow.glowIntensity > 0) {
             shape.glow.update();

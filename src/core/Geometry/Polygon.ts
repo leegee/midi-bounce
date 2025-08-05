@@ -25,6 +25,10 @@ export class Polygon {
     // Placeholder for collision logic.
 
 
+    transformedVertices() {
+        this.vertices = this.getTransformedVertices();
+    }
+
     // Get transformed vertices (with offset applied)
     getTransformedVertices(): { x: number; y: number }[] {
         return this.vertices.map(v => ({

@@ -13,10 +13,13 @@ export class App {
     private renderer: CanvasRenderer;
     private draggingShape: Polygon | null = null;
     private lastMousePos: { x: number; y: number } = { x: 0, y: 0 };
+    private dragOffset: { x: number; y: number } = { x: 0, y: 0 };
 
     constructor() {
         // Create canvas renderer and append to body
         this.renderer = new CanvasRenderer(document.body);
+
+        this.setupMouseEvents();
 
         // Initialize the ball at position (100,100) moving at (100, 120) px/s velocity
         const ball = new Ball(
@@ -32,7 +35,7 @@ export class App {
         );
         this.physics = new PhysicsEngine(ball);
 
-        // Add a sample hexagon shape at (200,200) with radius 50
+        // Add a sample hexagon shape at center with radius 100
         const hexagon = new Polygon(
             this.createHexagon(
                 this.renderer.width / 2,
@@ -67,7 +70,6 @@ export class App {
 
         // Draw all shapes
         for (const shape of this.physics.shapes) {
-            // this.renderer.drawPolygon(shape);
             this.renderer.drawPolygon(shape);
         }
 
@@ -95,8 +97,11 @@ export class App {
 
         canvas.addEventListener('mousedown', (e) => {
             const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
 
             for (const shape of this.physics.shapes) {
                 if (shape.draggable && shape.containsPoint(mouseX, mouseY)) {
@@ -108,19 +113,26 @@ export class App {
         });
 
         canvas.addEventListener('mousemove', (e) => {
-            if (this.draggingShape) {
-                const rect = canvas.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
+            if (!this.draggingShape) return;
 
-                const dx = mouseX - this.lastMousePos.x;
-                const dy = mouseY - this.lastMousePos.y;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
 
-                this.draggingShape.offset.x += dx;
-                this.draggingShape.offset.y += dy;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
 
-                this.lastMousePos = { x: mouseX, y: mouseY };
+            const dx = mouseX - this.lastMousePos.x;
+            const dy = mouseY - this.lastMousePos.y;
+
+            // Move each vertex by delta
+            for (const v of this.draggingShape.vertices) {
+                v.x += dx;
+                v.y += dy;
             }
+
+            this.lastMousePos = { x: mouseX, y: mouseY };
+            this.update();
         });
 
         canvas.addEventListener('mouseup', () => {
@@ -130,6 +142,6 @@ export class App {
         canvas.addEventListener('mouseleave', () => {
             this.draggingShape = null;
         });
-    }
 
+    }
 }
