@@ -1,9 +1,10 @@
-import { PhysicsEngine, Ball } from '../core/PhysicsEngine';
+import { PhysicsEngine } from '../core/PhysicsEngine';
 import { MIDIEmitter, type BounceData } from '../core/MIDIEmitter';
 import { EventBus } from '../core/EventBus';
 import { ExamplePlugin } from '../plugins/ExamplePlugin';
 import { CanvasRenderer } from '../core/CanvasRenderer';
 import { Polygon } from '../core/Geometry';
+import { Ball } from '../core/Ball';
 
 const BALL_RADIUS = 10;
 export class App {
