@@ -1,8 +1,7 @@
 // ------------------------ core/PhysicsEngine.ts ------------------------
-import { Polygon } from './Geometry';
+import { Ball, Polygon } from './Geometry';
 import { type BounceData } from './MIDIEmitter';
 import { EventBus } from './EventBus';
-import type { Ball } from './Ball';
 
 export class PhysicsEngine {
     shapes: Polygon[] = [];
