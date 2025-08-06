@@ -20,7 +20,7 @@ export class Game {
 
         this.grid.activateLargeHexagon(1);
 
-        this.ball = new Ball(this.renderer, 0, 0, 1, 0);
+        this.ball = new Ball(this.renderer, 0, 0, 2, 2);
 
         // todo tidy & remove
         document.addEventListener('keydown', (e: KeyboardEvent) => {
