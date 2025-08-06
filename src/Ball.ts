@@ -53,7 +53,7 @@ export class Ball {
             this.radius, 0,
             Math.PI * 2
         );
-        this.renderer.ctx.fillStyle = "lime";
+        this.renderer.ctx.fillStyle = "white";
         this.renderer.ctx.fill();
     }
 }
