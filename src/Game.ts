@@ -6,13 +6,15 @@ import { sendMidiNoteOn } from "./MIDI";
 
 
 export class Game {
+    private animationFrameId: number | null = null;
     renderer: Renderer;
     grid: HexGrid;
     ball: Ball;
     animating: boolean = true;
-    private animationFrameId: number | null = null;
+    handleEscapeCallback?: () => void;
 
-    constructor(canvas: HTMLCanvasElement) {
+    constructor(canvas: HTMLCanvasElement, handleEscape?: () => void) {
+        if (handleEscape) this.handleEscapeCallback = handleEscape;
         this.renderer = new Renderer(canvas);
         this.grid = new HexGrid(this.renderer);
 
@@ -30,8 +32,17 @@ export class Game {
         document.addEventListener('keydown', (e: KeyboardEvent) => {
             if (e.key === ' ') {
                 this.toggleAnimation();
+                return;
+            }
+            if (e.key === 'Escape' && this.handleEscapeCallback) {
+                this.handleEscapeCallback();
+                return;
             }
         });
+    }
+
+    setHandleEscapeCallback(callback: () => void) {
+        this.handleEscapeCallback = callback;
     }
 
     start() {
