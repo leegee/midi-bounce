@@ -4,11 +4,13 @@ import { Ball } from "./Ball";
 import { reflectBallIfColliding, type CollisionInfo } from "./collisions";
 import { sendMidiNoteOn } from "./MIDI";
 
+
 export class Game {
     renderer: Renderer;
     grid: HexGrid;
     ball: Ball;
     animating: boolean = true;
+    private animationFrameId: number | null = null;
 
     constructor(canvas: HTMLCanvasElement) {
         this.renderer = new Renderer(canvas);
@@ -17,6 +19,7 @@ export class Game {
 
         this.ball = new Ball(this.renderer, 0, 0, 1, 1);
 
+        // todo tidy & remove
         document.addEventListener('keydown', (e: KeyboardEvent) => {
             if (e.key === ' ') {
                 this.toggleAnimation();
@@ -30,7 +33,12 @@ export class Game {
 
     toggleAnimation() {
         this.animating = !this.animating;
-        if (this.animating) this.animate();
+        if (this.animating) {
+            this.animate();
+        } else if (this.animationFrameId !== null) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
     }
 
     private onCollision(info: CollisionInfo) {
@@ -42,14 +50,14 @@ export class Game {
     }
 
     private animate() {
+        if (!this.animating) return;
+
         this.ball.move();
         reflectBallIfColliding(this.ball, this.grid, (info) => this.onCollision(info));
 
         this.grid.render();
         this.ball.render();
 
-        if (this.animating) {
-            requestAnimationFrame(() => this.animate());
-        }
+        this.animationFrameId = requestAnimationFrame(() => this.animate());
     }
 }
