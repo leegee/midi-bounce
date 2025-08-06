@@ -10,6 +10,7 @@ export type CollisionInfo = {
     cell: HexCell;
     edgeIndex: number;
     reflectionAngle: number;
+    incomingAngle: number;
     incidenceAngle: number;
 };
 
@@ -83,6 +84,7 @@ export function reflectBallIfColliding(
                         cell,
                         edgeIndex: i,
                         reflectionAngle,
+                        incomingAngle,
                         incidenceAngle,
                     } as CollisionInfo);
                 }
