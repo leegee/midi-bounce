@@ -34,6 +34,7 @@ export class Game {
     }
 
     private onCollision(info: CollisionInfo) {
+        if (!this.animating) return;
         const speed = Math.min(127, Math.floor(
             Math.sqrt(info.newVelocity.vx ** 2 + info.newVelocity.vy ** 2) * 10
         ));
