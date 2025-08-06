@@ -114,6 +114,12 @@ function render(grid: HexGrid) {
 }
 
 const grid = new HexGrid(canvas.width, canvas.height);
+
+const centerCell = grid.getCell(0, 0);
+if (centerCell) {
+    centerCell.active = true;
+}
+
 render(grid);
 
 canvas.addEventListener("click", (e) => {
