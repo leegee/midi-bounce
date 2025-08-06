@@ -15,7 +15,14 @@ export class Game {
     constructor(canvas: HTMLCanvasElement) {
         this.renderer = new Renderer(canvas);
         this.grid = new HexGrid(this.renderer);
+
         this.grid.getCell(0, 0)!.active = true;
+        this.grid.getCell(0, 1)!.active = true;
+        this.grid.getCell(1, 1)!.active = true;
+        this.grid.getCell(1, 0)!.active = true;
+        this.grid.getCell(1, -1)!.active = true;
+        this.grid.getCell(1, -1)!.active = true;
+        this.grid.getCell(0, -1)!.active = true;
 
         this.ball = new Ball(this.renderer, 0, 0, 1, 1);
 
@@ -41,12 +48,16 @@ export class Game {
         }
     }
 
+    // Could use RGB from CollisionInfo.edgeColor as three dims for sound
     private onCollision(info: CollisionInfo) {
         if (!this.animating) return;
+
+        // Clamp speed to velocity
         const speed = Math.min(127, Math.floor(
             Math.sqrt(info.newVelocity.vx ** 2 + info.newVelocity.vy ** 2) * 10
         ));
-        sendMidiNoteOn(speed);
+
+        sendMidiNoteOn(speed, info.edgeNote);
     }
 
     private animate() {

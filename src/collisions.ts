@@ -14,6 +14,7 @@ export type CollisionInfo = {
     incomingAngle: number;
     incidenceAngle: number;
     edgeColor: string;
+    edgeNote: number;
     hexTypeId: HexTypeId;
 };
 
@@ -90,6 +91,7 @@ export function reflectBallIfColliding(
                         incomingAngle,
                         incidenceAngle,
                         edgeColor: hexTypeRegistry.get(cell.typeId)?.edgeColors[i] || "#F00",
+                        edgeNote: hexTypeRegistry.get(cell.typeId)?.edgeNotes[i] || 0,
                         hexTypeId: cell.typeId,
                     } as CollisionInfo);
                 }

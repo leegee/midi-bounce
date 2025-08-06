@@ -6,6 +6,7 @@ export type HexTypeId = string;
 export interface HexTypeStyle {
     name: string;
     edgeColors: string[]; // array of 6 colors, one per edge
+    edgeNotes: number[]; // array of 6 MIDI note numbers, one per edge
     fillColor?: string;
 }
 
