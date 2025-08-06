@@ -4,14 +4,12 @@ import { Game } from './Game';
 
 import styles from './App.module.css';
 
-// Helper: Convert velocity vector to angle (degrees) and speed
 function velocityToAngleSpeed(vx: number, vy: number) {
     const speed = Math.sqrt(vx * vx + vy * vy);
     const angle = (Math.atan2(vy, vx) * 180) / Math.PI;
     return { speed, angle: (angle + 360) % 360 }; // normalize angle to 0-360
 }
 
-// Helper: Convert angle (degrees) and speed to velocity vector
 function angleSpeedToVelocity(angle: number, speed: number) {
     const rad = (angle * Math.PI) / 180;
     return {
@@ -39,17 +37,12 @@ export default function App() {
                         if (!game) return;
 
                         if (!showModal()) {
-                            // Modal currently closed: open it & pause game
                             const { speed: currentSpeed, angle: currentAngle } = velocityToAngleSpeed(game.ball.vx, game.ball.vy);
                             setSpeed(currentSpeed);
                             setAngle(currentAngle);
-                            setShowModal(true);
-                            game.toggleAnimation();  // pause animation
-                        } else {
-                            // Modal open: close it & resume game without applying changes
-                            setShowModal(false);
-                            game.toggleAnimation();  // resume animation
                         }
+                        setShowModal(!showModal());
+                        game.toggleAnimation();
                     });
 
                     game.start();
@@ -72,7 +65,7 @@ export default function App() {
             game.setBallVelocity(vx, vy);
         }
         setShowModal(false);
-        game?.start(); // resume animation
+        game?.start();
     }
 
     return (
