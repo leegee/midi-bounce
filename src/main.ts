@@ -1,56 +1,50 @@
+const hexRadius = 40;
 const canvas = document.getElementById('hexCanvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
-const hexRadius = 30;
 
-// Flat-topped hexagon neighbor directions (q, r offsets)
-const neighborDirections = [
-    { q: +1, r: 0 },  // East
-    { q: 0, r: -1 },  // NorthEast
-    { q: -1, r: -1 }, // NorthWest
-    { q: -1, r: 0 },  // West
-    { q: 0, r: +1 },  // SouthWest
-    { q: +1, r: +1 }  // SouthEast
+type AxialCoord = { q: number; r: number };
+type PixelCoord = { x: number; y: number };
+
+const neighborDirs: AxialCoord[] = [
+    { q: 1, r: 0 }, { q: 0, r: 1 }, { q: -1, r: 1 },
+    { q: -1, r: 0 }, { q: 0, r: -1 }, { q: 1, r: -1 }
 ];
-
-// Flat-topped hexagon corner angles
-const cornerAngles = [0, Math.PI / 3, 2 * Math.PI / 3, Math.PI, -2 * Math.PI / 3, -Math.PI / 3];
 
 class HexCell {
     q: number;
     r: number;
-    x: number;
-    y: number;
     active: boolean = false;
-
-    constructor(q: number, r: number, x: number, y: number) {
+    constructor(q: number, r: number) {
         this.q = q;
         this.r = r;
-        this.x = x;
-        this.y = y;
+    }
+
+    center(): PixelCoord {
+        const x = hexRadius * 3 / 2 * this.q;
+        const y = hexRadius * Math.sqrt(3) * (this.r + this.q / 2);
+        return { x, y };
+    }
+
+    neighbor(direction: number): AxialCoord {
+        const dir = neighborDirs[direction];
+        return { q: this.q + dir.q, r: this.r + dir.r };
+    }
+
+    key(): string {
+        return `${this.q},${this.r}`;
     }
 }
 
 class HexGrid {
-    radius: number;
-    cells: Map<string, HexCell>;
+    cells = new Map<string, HexCell>();
 
-    constructor(radius: number, widthPx: number, heightPx: number) {
-        this.radius = radius;
-        this.cells = new Map();
-
-        const dx = radius * 3 / 2;
-        const dy = Math.sqrt(3) * radius;
-
-        const qMin = Math.floor(-widthPx / dx) - 2;
-        const qMax = Math.ceil(widthPx / dx) + 2;
-        const rMin = Math.floor(-heightPx / dy) - 2;
-        const rMax = Math.ceil(heightPx / dy) + 2;
-
-        for (let q = qMin; q <= qMax; q++) {
-            for (let r = rMin; r <= rMax; r++) {
-                const x = dx * q;
-                const y = dy * (r + q / 2);
-                this.cells.set(`${q},${r}`, new HexCell(q, r, x, y));
+    constructor(widthPx: number, heightPx: number) {
+        const qRange = Math.ceil(widthPx / (hexRadius * 1.5)) + 2;
+        const rRange = Math.ceil(heightPx / (hexRadius * Math.sqrt(3))) + 2;
+        for (let q = -qRange; q <= qRange; q++) {
+            for (let r = -rRange; r <= rRange; r++) {
+                const cell = new HexCell(q, r);
+                this.cells.set(cell.key(), cell);
             }
         }
     }
@@ -58,70 +52,78 @@ class HexGrid {
     getCell(q: number, r: number): HexCell | undefined {
         return this.cells.get(`${q},${r}`);
     }
+
+    pixelToHex(x: number, y: number): AxialCoord {
+        const q = (2 / 3 * x) / hexRadius;
+        const r = (-1 / 3 * x + Math.sqrt(3) / 3 * y) / hexRadius;
+        return hexRound(q, r);
+    }
 }
 
-function pixelToHex(x: number, y: number, radius: number): { q: number; r: number } {
-    const qf = (2 / 3 * x) / radius;
-    const rf = ((-1 / 3 * x) + (Math.sqrt(3) / 3 * y)) / radius;
-
+function hexRound(qf: number, rf: number): AxialCoord {
     let q = Math.round(qf);
     let r = Math.round(rf);
     const s = -qf - rf;
+    const sRounded = -q - r;
 
     const dq = Math.abs(q - qf);
     const dr = Math.abs(r - rf);
-    const ds = Math.abs(-q - r - s);
+    const ds = Math.abs(sRounded - s);
 
-    if (dq > dr && dq > ds) {
-        q = -r - Math.round(s);
-    } else if (dr > ds) {
-        r = -q - Math.round(s);
-    }
+    if (dq > dr && dq > ds) q = -r - sRounded;
+    else if (dr > ds) r = -q - sRounded;
 
     return { q, r };
 }
 
-function renderGrid(ctx: CanvasRenderingContext2D, grid: HexGrid) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.lineWidth = 2;
-    const R = grid.radius;
+function drawHexEdges(cell: HexCell, grid: HexGrid) {
+    const center = cell.center();
+    const angles = [0, Math.PI / 3, 2 * Math.PI / 3, Math.PI, -2 * Math.PI / 3, -Math.PI / 3];
 
-    for (const cell of grid.cells.values()) {
-        if (!cell.active) continue;
+    for (let i = 0; i < 6; i++) {
+        const neighborCoords = cell.neighbor(i);
+        const neighbor = grid.getCell(neighborCoords.q, neighborCoords.r);
 
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const neighbor = grid.getCell(cell.q + neighborDirections[i].q, cell.r + neighborDirections[i].r);
-            if (neighbor && neighbor.active) continue;
+        if (neighbor && neighbor.active) continue; // Skip shared edge
 
-            const angleA = cornerAngles[i];
-            const angleB = cornerAngles[(i + 1) % 6];
+        const angleA = angles[i];
+        const angleB = angles[(i + 1) % 6];
 
-            const x1 = cell.x + R * Math.cos(angleA);
-            const y1 = cell.y + R * Math.sin(angleA);
-            const x2 = cell.x + R * Math.cos(angleB);
-            const y2 = cell.y + R * Math.sin(angleB);
+        const x1 = center.x + hexRadius * Math.cos(angleA);
+        const y1 = center.y + hexRadius * Math.sin(angleA);
+        const x2 = center.x + hexRadius * Math.cos(angleB);
+        const y2 = center.y + hexRadius * Math.sin(angleB);
 
-            ctx.moveTo(x1 + ctx.canvas.width / 2, y1 + ctx.canvas.height / 2);
-            ctx.lineTo(x2 + ctx.canvas.width / 2, y2 + ctx.canvas.height / 2);
-        }
-        ctx.strokeStyle = "orange";
-        ctx.stroke();
+        ctx.moveTo(x1 + canvas.width / 2, y1 + canvas.height / 2);
+        ctx.lineTo(x2 + canvas.width / 2, y2 + canvas.height / 2);
     }
 }
 
-const grid = new HexGrid(hexRadius, canvas.width, canvas.height);
-renderGrid(ctx, grid);
+function render(grid: HexGrid) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#EEF";
+    ctx.lineWidth = 2;
 
-canvas.addEventListener("click", (e: MouseEvent) => {
+    ctx.beginPath();
+    for (const cell of grid.cells.values()) {
+        if (cell.active) {
+            drawHexEdges(cell, grid);
+        }
+    }
+    ctx.stroke();
+}
+
+const grid = new HexGrid(canvas.width, canvas.height);
+render(grid);
+
+canvas.addEventListener("click", (e) => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left - canvas.width / 2;
     const y = e.clientY - rect.top - canvas.height / 2;
-
-    const { q, r } = pixelToHex(x, y, hexRadius);
+    const { q, r } = grid.pixelToHex(x, y);
     const cell = grid.getCell(q, r);
     if (cell) {
         cell.active = !cell.active;
-        renderGrid(ctx, grid);
+        render(grid);
     }
 });
