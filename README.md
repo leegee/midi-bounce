@@ -1,6 +1,8 @@
 # midi-bounce
 
-Experiments with Web MIDI API - bouncing a ball inside a honeycomb
+Experiments with Web MIDI API - bouncing a ball inside a honeycomb.
+
+Remember loopMIDI is very useful in this scenario.
 
 To install dependencies:
 
