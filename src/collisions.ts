@@ -1,7 +1,8 @@
 import type { Ball } from "./Ball";
-import type { HexCell } from "./HexCell";
+import type { HexCell, HexTypeId } from "./HexCell";
 import type { HexGrid } from "./HexGrid";
 import { hexRadius } from "./constants";
+import { hexTypeRegistry } from "./hexTypeRegistry";
 
 export type CollisionInfo = {
     newVelocity: { vx: number; vy: number };
@@ -12,6 +13,8 @@ export type CollisionInfo = {
     reflectionAngle: number;
     incomingAngle: number;
     incidenceAngle: number;
+    edgeColor: string;
+    hexTypeId: HexTypeId;
 };
 
 export function reflectBallIfColliding(
@@ -86,6 +89,8 @@ export function reflectBallIfColliding(
                         reflectionAngle,
                         incomingAngle,
                         incidenceAngle,
+                        edgeColor: hexTypeRegistry.get(cell.typeId)?.edgeColors[i] || "#F00",
+                        hexTypeId: cell.typeId,
                     } as CollisionInfo);
                 }
 

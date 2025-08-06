@@ -1,6 +1,14 @@
 import { hexRadius } from "./constants";
 import type { AxialCoord, PixelCoord } from "./types";
 
+export type HexTypeId = string;
+
+export interface HexTypeStyle {
+    name: string;
+    edgeColors: string[]; // array of 6 colors, one per edge
+    fillColor?: string;
+}
+
 const neighborDirs: AxialCoord[] = [
     { q: 1, r: 0 }, { q: 0, r: 1 }, { q: -1, r: 1 },
     { q: -1, r: 0 }, { q: 0, r: -1 }, { q: 1, r: -1 }
@@ -10,9 +18,16 @@ export class HexCell {
     q: number;
     r: number;
     active: boolean = false;
-    constructor(q: number, r: number) {
+    typeId: HexTypeId;
+
+    constructor(
+        q: number,
+        r: number,
+        typeId: HexTypeId = 'default',
+    ) {
         this.q = q;
         this.r = r;
+        this.typeId = typeId;
     }
 
     center(): PixelCoord {

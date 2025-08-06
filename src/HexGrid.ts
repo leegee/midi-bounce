@@ -1,5 +1,6 @@
 import { hexRadius } from "./constants";
 import { HexCell } from "./HexCell";
+import { hexTypeRegistry } from "./hexTypeRegistry";
 import type { Renderer } from "./Renderer";
 import type { AxialCoord } from "./types";
 
@@ -74,6 +75,8 @@ export class HexGrid {
     drawHexEdges(cell: HexCell) {
         const center = cell.center();
         const angles = [0, Math.PI / 3, 2 * Math.PI / 3, Math.PI, -2 * Math.PI / 3, -Math.PI / 3];
+        const style = hexTypeRegistry.get(cell.typeId) || hexTypeRegistry.get("default")!;
+        const colors = style.edgeColors;
 
         for (let i = 0; i < 6; i++) {
             const neighborCoords = cell.neighbor(i);
@@ -88,6 +91,8 @@ export class HexGrid {
             const y1 = center.y + hexRadius * Math.sin(angleA);
             const x2 = center.x + hexRadius * Math.cos(angleB);
             const y2 = center.y + hexRadius * Math.sin(angleB);
+
+            this.renderer.ctx.strokeStyle = colors[i];
 
             this.renderer.ctx.moveTo(x1 + this.renderer.canvas.width / 2, y1 + this.renderer.canvas.height / 2);
             this.renderer.ctx.lineTo(x2 + this.renderer.canvas.width / 2, y2 + this.renderer.canvas.height / 2);

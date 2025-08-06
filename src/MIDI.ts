@@ -47,7 +47,7 @@ export function sendMidiNoteOn(
     const noteOnStatus = 0x90 + channel;
     const noteOffStatus = 0x80 + channel;
 
-    console.log('NOTE ON', noteOnStatus, note, velocity);
+    // console.log('NOTE ON', noteOnStatus, note, velocity);
 
     midiOutput.send([noteOnStatus, note, velocity]);
     setTimeout(() => {

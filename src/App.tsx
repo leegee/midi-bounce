@@ -33,7 +33,7 @@ export default function App() {
         const grid = new HexGrid(renderer);
         grid.getCell(0, 0)!.active = true;;
 
-        const ball = new Ball(renderer, 0, 0, 3, 2);
+        const ball = new Ball(renderer, 0, 0, 1, 1);
 
         function onCollision(info: CollisionInfo) {
             const speed = Math.min(127, Math.floor(
