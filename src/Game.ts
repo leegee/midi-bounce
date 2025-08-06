@@ -26,7 +26,7 @@ export class Game {
         this.grid.getCell(1, -1)!.active = true;
         this.grid.getCell(0, -1)!.active = true;
 
-        this.ball = new Ball(this.renderer, 0, 0, 1, 1);
+        this.ball = new Ball(this.renderer, 0, 0, 1, 0);
 
         // todo tidy & remove
         document.addEventListener('keydown', (e: KeyboardEvent) => {
