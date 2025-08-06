@@ -59,7 +59,7 @@ export function reflectBallIfColliding(
             // ball.radius ** 2 is the squared radius of the ball.
             // If the distance squared is less than or equal to the ball's radius squared, the ball is considered colliding with or touching the edge
 
-            if (distSquared <= ball.radius ** 2) {
+            if (distSquared <= (1 + ball.radius) ** 2) {
                 // Reflect velocity vector around edge normal
                 const edgeNormalX = -(y2 - y1);
                 const edgeNormalY = x2 - x1;

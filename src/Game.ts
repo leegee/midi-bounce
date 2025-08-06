@@ -38,13 +38,17 @@ export class Game {
         this.animate();
     }
 
+    stop() {
+        if (this.animationFrameId !== null) cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+    }
+
     toggleAnimation() {
         this.animating = !this.animating;
         if (this.animating) {
-            this.animate();
+            this.start();
         } else if (this.animationFrameId !== null) {
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = null;
+            this.stop();
         }
     }
 
