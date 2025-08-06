@@ -10,6 +10,7 @@ export function initMidi(matchDeviceName: string): Promise<void> {
     return navigator.requestMIDIAccess()
         .then((midiAccess) => {
             const outputs = Array.from((midiAccess.outputs as Map<string, MIDIOutput>).values());
+            console.log(outputs)
             if (outputs.length > 0) {
                 midiOutput = outputs.find(o => o.name?.includes(matchDeviceName)) || null;
                 if (!midiOutput) {

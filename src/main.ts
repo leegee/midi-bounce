@@ -4,7 +4,9 @@ import { Ball } from "./Ball";
 import { initMidi, sendMidiNoteOn } from './MIDI';
 import { reflectBallIfColliding, type CollisionInfo } from "./collisions";
 
-initMidi('Focusrite')
+let animating = false;
+
+initMidi('loop')
     .then(() => {
         console.log("MIDI initialized");
         main();
@@ -15,6 +17,13 @@ function main() {
     const renderer = new Renderer(
         document.getElementById('hexCanvas') as HTMLCanvasElement
     );
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === ' ') {
+            animating = !animating;
+            if (animating) animate();
+        }
+    });
 
     const grid = new HexGrid(renderer);
     grid.getCell(0, 0)!.active = true;;
@@ -35,7 +44,9 @@ function main() {
         grid.render();
         ball.render();
 
-        requestAnimationFrame(animate);
+        if (animating) {
+            requestAnimationFrame(animate);
+        }
     }
 
     animate();
