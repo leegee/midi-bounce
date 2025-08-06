@@ -1,8 +1,21 @@
 import type { Ball } from "./Ball";
+import type { HexCell } from "./HexCell";
 import type { HexGrid } from "./HexGrid";
 import { hexRadius } from "./constants";
 
-export function reflectBallIfColliding(ball: Ball, grid: HexGrid) {
+export type CollisionInfo = {
+    newVelocity: { vx: number; vy: number };
+    normal: { nx: number; ny: number };
+    collisionPoint: { x: number; y: number };
+    cell: HexCell;
+    edgeIndex: number;
+};
+
+export function reflectBallIfColliding(
+    ball: Ball,
+    grid: HexGrid,
+    onCollision?: (info: CollisionInfo) => void
+) {
     const futureX = ball.x + ball.vx;
     const futureY = ball.y + ball.vy;
 
@@ -33,7 +46,11 @@ export function reflectBallIfColliding(ball: Ball, grid: HexGrid) {
             const closestX = x1 + t * edgeDx;
             const closestY = y1 + t * edgeDy;
 
+            // distSquared is the squared distance from the ball's future position to the closest point on the current edge
             const distSquared = (futureX - closestX) ** 2 + (futureY - closestY) ** 2;
+
+            // ball.radius ** 2 is the squared radius of the ball.
+            // If the distance squared is less than or equal to the ball's radius squared, the ball is considered colliding with or touching the edge
 
             if (distSquared <= ball.radius ** 2) {
                 // Reflect velocity vector around edge normal
@@ -51,6 +68,17 @@ export function reflectBallIfColliding(ball: Ball, grid: HexGrid) {
                 const pushBack = ball.radius - Math.sqrt(distSquared);
                 ball.x += nx * pushBack;
                 ball.y += ny * pushBack;
+
+                if (onCollision) {
+                    onCollision({
+                        newVelocity: { vx: ball.vx, vy: ball.vy },
+                        normal: { nx, ny },
+                        collisionPoint: { x: closestX, y: closestY },
+                        cell,
+                        edgeIndex: i,
+                    });
+                }
+
                 return;
             }
         }
