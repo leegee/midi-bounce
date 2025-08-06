@@ -92,10 +92,11 @@ export class HexGrid {
             const x2 = center.x + hexRadius * Math.cos(angleB);
             const y2 = center.y + hexRadius * Math.sin(angleB);
 
+            this.renderer.ctx.beginPath();
             this.renderer.ctx.strokeStyle = colors[i];
-
             this.renderer.ctx.moveTo(x1 + this.renderer.canvas.width / 2, y1 + this.renderer.canvas.height / 2);
             this.renderer.ctx.lineTo(x2 + this.renderer.canvas.width / 2, y2 + this.renderer.canvas.height / 2);
+            this.renderer.ctx.stroke();
         }
     }
 }    
