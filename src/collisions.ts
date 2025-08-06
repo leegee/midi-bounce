@@ -9,6 +9,8 @@ export type CollisionInfo = {
     collisionPoint: { x: number; y: number };
     cell: HexCell;
     edgeIndex: number;
+    reflectionAngle: number;
+    incidenceAngle: number;
 };
 
 export function reflectBallIfColliding(
@@ -70,13 +72,19 @@ export function reflectBallIfColliding(
                 ball.y += ny * pushBack;
 
                 if (onCollision) {
+                    const reflectionAngle = Math.atan2(ball.vy, ball.vx); // radians
+                    const incomingAngle = Math.atan2(ball.vy - (-2 * dot * ny), ball.vx - (-2 * dot * nx)); // before reflection
+                    const incidenceAngle = Math.acos((ball.vx * nx + ball.vy * ny) / Math.hypot(ball.vx, ball.vy)); // in radians
+
                     onCollision({
                         newVelocity: { vx: ball.vx, vy: ball.vy },
                         normal: { nx, ny },
                         collisionPoint: { x: closestX, y: closestY },
                         cell,
                         edgeIndex: i,
-                    });
+                        reflectionAngle,
+                        incidenceAngle,
+                    } as CollisionInfo);
                 }
 
                 return;
