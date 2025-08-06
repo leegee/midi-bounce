@@ -1,5 +1,7 @@
 # midi-bounce
 
+Experiments with Web MIDI API - bouncing a ball inside a honeycomb
+
 To install dependencies:
 
 ```bash
