@@ -37,9 +37,9 @@ export default function App() {
                         if (!game) return;
 
                         if (!showModal()) {
-                            const { speed: currentSpeed, angle: currentAngle } = velocityToAngleSpeed(game.ball.vx, game.ball.vy);
-                            setSpeed(currentSpeed);
-                            setAngle(currentAngle);
+                            const { speed, angle } = velocityToAngleSpeed(game.ball.vx, game.ball.vy);
+                            setSpeed(speed);
+                            setAngle(angle);
                         }
                         setShowModal(!showModal());
                         game.toggleAnimation();
