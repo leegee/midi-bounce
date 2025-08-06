@@ -10,12 +10,14 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/webmidi": "^3.0.1",
-    "vite": "^7.0.6"
+    "vite": "^7.0.6",
+    "vite-plugin-solid": "^2.11.8"
   },
   "peerDependencies": {
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "lit": "^3.3.1"
+    "lit": "^3.3.1",
+    "solid-js": "^1.9.7"
   }
 }
