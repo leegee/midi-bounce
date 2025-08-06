@@ -99,4 +99,16 @@ export class HexGrid {
             this.renderer.ctx.stroke();
         }
     }
+
+    activateLargeHexagon(radius: number) {
+        for (let q = -radius; q <= radius; q++) {
+            const r1 = Math.max(-radius, -q - radius);
+            const r2 = Math.min(radius, -q + radius);
+            for (let r = r1; r <= r2; r++) {
+                const cell = this.getCell(q, r);
+                if (cell) cell.active = true;
+            }
+        }
+    }
+
 }    
