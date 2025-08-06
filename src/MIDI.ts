@@ -1,22 +1,29 @@
 let midiOutput: MIDIOutput | null = null;
 
+
 /**
  * Initialize Web MIDI and select the first available output device.
  * Returns a promise that resolves once MIDI is ready.
  */
-export function initMidi(): Promise<void> {
+export function initMidi(matchDeviceName: string): Promise<void> {
+    console.log('Init MIDI device ', matchDeviceName);
     return navigator.requestMIDIAccess()
         .then((midiAccess) => {
             const outputs = Array.from((midiAccess.outputs as Map<string, MIDIOutput>).values());
             if (outputs.length > 0) {
-                midiOutput = outputs[0];
-                console.log("MIDI Output ready:", midiOutput.name);
+                midiOutput = outputs.find(o => o.name?.includes(matchDeviceName)) || null;
+                if (!midiOutput) {
+                    throw new Error(`Could not find an output containing "${matchDeviceName}".`);
+                } else {
+                    console.log("MIDI Output ready:", midiOutput.name);
+                }
             } else {
-                console.warn("No MIDI output devices found.");
+                throw new Error("No MIDI output devices found.");
             }
         })
         .catch((err) => {
             console.error("Failed to get MIDI access", err);
+            throw new Error(err);
         });
 }
 

@@ -4,34 +4,39 @@ import { Ball } from "./Ball";
 import { initMidi, sendMidiNoteOn } from './MIDI';
 import { reflectBallIfColliding, type CollisionInfo } from "./collisions";
 
-initMidi().then(() => {
-    console.log("MIDI initialized");
-});
+initMidi('Focusrite')
+    .then(() => {
+        console.log("MIDI initialized");
+        main();
+    })
+    .catch((e) => alert(e))
 
-const renderer = new Renderer(
-    document.getElementById('hexCanvas') as HTMLCanvasElement
-);
+function main() {
+    const renderer = new Renderer(
+        document.getElementById('hexCanvas') as HTMLCanvasElement
+    );
 
-const grid = new HexGrid(renderer);
-grid.getCell(0, 0)!.active = true;;
+    const grid = new HexGrid(renderer);
+    grid.getCell(0, 0)!.active = true;;
 
-const ball = new Ball(renderer, 0, 0, 3, 2);
+    const ball = new Ball(renderer, 0, 0, 3, 2);
 
-function onCollision(info: CollisionInfo) {
-    const speed = Math.min(127, Math.floor(
-        Math.sqrt(info.newVelocity.vx ** 2 + info.newVelocity.vy ** 2) * 10
-    ));
-    sendMidiNoteOn(speed);
+    function onCollision(info: CollisionInfo) {
+        const speed = Math.min(127, Math.floor(
+            Math.sqrt(info.newVelocity.vx ** 2 + info.newVelocity.vy ** 2) * 10
+        ));
+        sendMidiNoteOn(speed);
+    }
+
+    function animate() {
+        ball.move();
+        reflectBallIfColliding(ball, grid, onCollision);
+
+        grid.render();
+        ball.render();
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
 }
-
-function animate() {
-    ball.move();
-    reflectBallIfColliding(ball, grid, onCollision);
-
-    grid.render();
-    ball.render();
-
-    requestAnimationFrame(animate);
-}
-
-animate();
