@@ -10,7 +10,7 @@ export class Game {
     renderer: Renderer;
     grid: HexGrid;
     ball: Ball;
-    animating: boolean = true;
+    animating = true;
     handleEscapeCallback?: () => void;
 
     constructor(canvas: HTMLCanvasElement, handleEscape?: () => void) {
@@ -46,10 +46,12 @@ export class Game {
     }
 
     start() {
+        this.animating = true;
         this.animate();
     }
 
     stop() {
+        this.animating = false;
         if (this.animationFrameId !== null) cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = null;
     }
@@ -61,6 +63,11 @@ export class Game {
         } else if (this.animationFrameId !== null) {
             this.stop();
         }
+    }
+
+    setBallVelocity(vx: number, vy: number) {
+        this.ball.vx = vx;
+        this.ball.vy = vy;
     }
 
     // Could use RGB from CollisionInfo.edgeColor as three dims for sound

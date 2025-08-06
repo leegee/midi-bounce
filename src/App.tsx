@@ -4,10 +4,29 @@ import { Game } from './Game';
 
 import styles from './App.module.css';
 
+// Helper: Convert velocity vector to angle (degrees) and speed
+function velocityToAngleSpeed(vx: number, vy: number) {
+    const speed = Math.sqrt(vx * vx + vy * vy);
+    const angle = (Math.atan2(vy, vx) * 180) / Math.PI;
+    return { speed, angle: (angle + 360) % 360 }; // normalize angle to 0-360
+}
+
+// Helper: Convert angle (degrees) and speed to velocity vector
+function angleSpeedToVelocity(angle: number, speed: number) {
+    const rad = (angle * Math.PI) / 180;
+    return {
+        vx: speed * Math.cos(rad),
+        vy: speed * Math.sin(rad),
+    };
+}
+
 export default function App() {
     let canvasRef: HTMLCanvasElement | undefined;
     let game: Game | null = null;
+
     const [showModal, setShowModal] = createSignal(false);
+    const [angle, setAngle] = createSignal(45); // Degrees
+    const [speed, setSpeed] = createSignal(1);
 
     onMount(() => {
         initMidi('loop')
@@ -15,10 +34,24 @@ export default function App() {
                 console.log("MIDI initialized");
                 if (canvasRef) {
                     game = new Game(canvasRef);
+
                     game.setHandleEscapeCallback(() => {
-                        setShowModal(!showModal());
-                        game!.toggleAnimation();
+                        if (!game) return;
+
+                        if (!showModal()) {
+                            // Modal currently closed: open it & pause game
+                            const { speed: currentSpeed, angle: currentAngle } = velocityToAngleSpeed(game.ball.vx, game.ball.vy);
+                            setSpeed(currentSpeed);
+                            setAngle(currentAngle);
+                            setShowModal(true);
+                            game.toggleAnimation();  // pause animation
+                        } else {
+                            // Modal open: close it & resume game without applying changes
+                            setShowModal(false);
+                            game.toggleAnimation();  // resume animation
+                        }
                     });
+
                     game.start();
                 }
             })
@@ -33,21 +66,52 @@ export default function App() {
         }
     });
 
+    function applyVelocityChange() {
+        const { vx, vy } = angleSpeedToVelocity(angle(), speed());
+        if (game) {
+            game.setBallVelocity(vx, vy);
+        }
+        setShowModal(false);
+        game?.start(); // resume animation
+    }
+
     return (
         <>
             <canvas ref={canvasRef}></canvas>
 
             <Show when={showModal()}>
-                <div class={styles.modal}>
-                    <p>Paused. Press Escape again to resume.</p>
-                    <button class={styles.resumeButton} onClick={() => {
-                        setShowModal(false);
-                        game?.start();
-                    }}>
-                        Resume
-                    </button>
-                </div>
-            </Show>
+                <aside class={styles.modal}>
+                    <header>
+                        <h2>Adjust Ball Direction</h2>
+                    </header>
+
+                    <label>Angle (degrees):
+                        <input
+                            type="range"
+                            min={0}
+                            max={360}
+                            value={angle()}
+                            onInput={(e) => setAngle(parseFloat(e.currentTarget.value))}
+                        />
+                    </label>
+                    <label>Speed:
+                        <input
+                            type="range"
+                            min={0}
+                            max={20}
+                            step={0.1}
+                            value={speed()}
+                            onInput={(e) => setSpeed(parseFloat(e.currentTarget.value))}
+                        />
+                    </label>
+
+                    <footer>
+                        <button class={styles.resumeButton} onClick={applyVelocityChange}>
+                            Apply & Resume
+                        </button>
+                    </footer>
+                </aside>
+            </Show >
         </>
     );
 }

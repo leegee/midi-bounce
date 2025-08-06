@@ -6,10 +6,19 @@
     background: rgba(0, 0, 0, 0.8);
     padding: 2rem;
     color: white;
-    border-radius: 10px;
-    z-index: 10;
+    border-radius: 10pt;
+    z-index: 100;
 }
 
-.resumeButton {
+.modal label {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal footer {
+    margin-top: 1em;
     float: right;
 }
