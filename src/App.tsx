@@ -18,7 +18,11 @@ function angleSpeedToVelocity(angle: number, speed: number) {
     };
 }
 
-export default function App() {
+interface AppProps {
+    deviceMatch: string;
+}
+
+export default function App(props: AppProps) {
     let canvasRef: HTMLCanvasElement | undefined;
     let game: Game | null = null;
 
@@ -27,7 +31,7 @@ export default function App() {
     const [speed, setSpeed] = createSignal(1);
 
     onMount(() => {
-        initMidi('loop')
+        initMidi(props.deviceMatch || 'loop')
             .then(() => {
                 console.log("MIDI initialized");
                 if (canvasRef) {
