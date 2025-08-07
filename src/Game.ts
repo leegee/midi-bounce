@@ -18,7 +18,7 @@ export class Game {
         this.renderer = new Renderer(canvas);
         this.grid = new HexGrid(this.renderer);
 
-        this.grid.activateLargeHexagon(1);
+        this.grid.renderLargeHexagonGrid(1);
 
         this.ball = new Ball(this.renderer, 0, 0, 2, 2);
 

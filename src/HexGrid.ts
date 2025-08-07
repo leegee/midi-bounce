@@ -4,6 +4,8 @@ import { hexTypeRegistry } from "./hexTypeRegistry";
 import type { Renderer } from "./Renderer";
 import type { AxialCoord } from "./types";
 
+const angles = [0, Math.PI / 3, 2 * Math.PI / 3, Math.PI, -2 * Math.PI / 3, -Math.PI / 3];
+
 function hexRound(qf: number, rf: number): AxialCoord {
     let q = Math.round(qf);
     let r = Math.round(rf);
@@ -74,7 +76,6 @@ export class HexGrid {
 
     drawHexEdges(cell: HexCell) {
         const center = cell.center();
-        const angles = [0, Math.PI / 3, 2 * Math.PI / 3, Math.PI, -2 * Math.PI / 3, -Math.PI / 3];
         const style = hexTypeRegistry.get(cell.typeId) || hexTypeRegistry.get("default")!;
         const colors = style.edgeColors;
 
@@ -100,7 +101,7 @@ export class HexGrid {
         }
     }
 
-    activateLargeHexagon(radius: number) {
+    renderLargeHexagonGrid(radius: number) {
         for (let q = -radius; q <= radius; q++) {
             const r1 = Math.max(-radius, -q - radius);
             const r2 = Math.min(radius, -q + radius);

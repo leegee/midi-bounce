@@ -4,8 +4,15 @@ export const hexTypeRegistry = new Map<HexTypeId, HexTypeStyle>();
 
 hexTypeRegistry.set("default", {
     name: "Default",
-    edgeColors: ["red", "orange", "yellow", "green", "blue", "purple"],
+    edgeColors: ["orange", "cyan", "orange", "cyan", "orange", "cyan",],
     edgeNotes: [36, 38, 36, 38, 36, 38],
+    fillColor: "#222",
+});
+
+hexTypeRegistry.set("test", {
+    name: "Default",
+    edgeColors: ["red", "orange", "yellow", "green", "blue", "purple"],
+    edgeNotes: [36, 37, 38, 39, 40, 41],
     fillColor: "#222",
 });
 
