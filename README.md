@@ -1,8 +1,8 @@
 # midi-bounce
 
-Experiments with Web MIDI API - bouncing a ball inside a honeycomb.
+Experiments with Web MIDI API - bouncing a ball inside a honeycomb. Click to add/remove tiles.
 
-Remember loopMIDI is very useful in this scenario.
+![Screenshot](./screenshot.png)
 
 To install dependencies:
 
@@ -16,9 +16,11 @@ To run:
 bun dev
 ```
 
+Expects `loopMIDI` to be available.
+
 This project was created using `bun init` in bun v1.1.32. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
 
-## To DO
+## To Do
 
 Walls of different materials could have properties akin to those used in Web GL to sepcify the properties of interaction with light. Each property would have an effect on the interaction of the wall with the world/the ball/s: low roughness = bouncyness = add to velocity; high roughness = absorbs some of the ball's energy, decreasing velocity.
 
